@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"/>
+	<title>HTML 5</title>
+	<script src="music.js"></script>
+<script>
+
+var player;
+var intv;
+var slider;
+
+//int function
+window.onload = function (){
+	document.getElementById('btn-play').addEventListener('click', playMusic, false);
+	document.getElementById('btn-pause').addEventListener('click', pauseMusic, false);
+	document.getElementById('btn-stop').addEventListener('click', stopMusic, false);	
+	document.getElementById('btn-VolUp').addEventListener('click', VolUp, false);	
+	document.getElementById('btn-VolDown').addEventListener('click', VolDown, false);	
+	player = document.getElementById('player');
+	slider = document.getElementById('sliderTime');
+	slider.addEventListener('change', reposition, false);
+	getMusicList();
+}
+
+function reposition () {
+	player.currentTime = slider.value;
+}
+
+
+//volume controls
+//controls go from 0.0 (silent) to 1.0(full volume)
+function VolUp (){
+	if (player.volume < 1)
+	{
+		player.volume += 0.1;
+		console.log(player.volume);
+	}else {
+		player.volume = 1;
+	}
+}
+
+function VolDown (){
+	if (player.volume >0) 
+	{
+		player.volume -= 0.1;
+		console.log(player.volume);
+	}else{
+		player.volume = 0 ;
+	}
+}
+
+
+//music play controls
+function playMusic (){
+	player.play();
+	intv = setInterval(update, 100);
+	slider.max = player.duration;
+}
+function update (){
+	document.getElementById('songTime').innerHTML = millisToMins(player.currentTime);
+	slider.value = player.currentTime;
+}
+function millisToMins (seconds){
+	var numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+	var numseconds = (((seconds % 3153600) % 86400) % 3600) %60;
+	if(numseconds >= 10){
+	return 'Time Elapsed: ' + numminutes + ':' + Math.round(numseconds);
+	}else {
+		return 'Time Elapsed: ' + numminutes + ':0' + Math.round(numseconds);
+	}
+}
+function pauseMusic () {
+	player.pause();
+	clearInterval(intv);
+}
+function stopMusic () {
+	player.pause();
+	player.currentTime = 0;
+	clearInterval(intv);
+}
+function getMusicList (){
+		
+			var parser = new DOMParser();
+			xmlDocument = parser.parseFromString(xml, 'text/xml');
+			//console.log(xmlDocument);
+			var elementsArray = xmlDocument.documentElement.getElementsByTagName('compersition');
+			//console.log(elementsArray);
+			var arrayLength = elementsArray.length;
+			var output = "<table>";
+			for (var i=0; i< arrayLength; i++){
+			
+				var title = elementsArray[i].getElementsByTagName("title")[0].firstChild.nodeValue;
+				//console.log(title);
+				var name = elementsArray[i].getElementsByTagName("name")[0].firstChild.nodeValue;
+				var time = elementsArray[i].getElementsByTagName("time")[0].firstChild.nodeValue;
+				var filename = elementsArray[i].getElementsByTagName("filename")[0].firstChild.nodeValue;
+				//console.log(title + " :" + name + " :" + time + " :" + filename);
+				output += '<tr>';
+				output += ("<td onclick='songSelect(\"" + filename +"\")'>" + title + ' By : ' + name + '</td><td>' + time + '</td>');
+				output += '</tr>';
+			}	
+				output += '</table>';
+				document.getElementById('musiclist').innerHTML = output;
+	}
+	
+	function songSelect(fn){
+		//console.log(fn);
+		 document.getElementById('player').src = fn; 
+		playMusic();
+	}
+</script>
+
+<style>
+
+#musiclist td {
+	border:1px solid blue;
+	padding:5px;
+}
+
+#musiclist td:hover {
+	background-color:#990000;
+	color:white;
+}
+
+
+
+
+</style>
+
+
+</head>
+<body>
+
+ 	
+<audio id="player">
+	<!-- <source src="audio2.mp3" type="audio/mpeg" /> -->
+	this browser does not compatible with HTML 5 audio
+</audio>
+
+
+
+<button id="btn-play" >Play</button>
+<button id="btn-pause">Pause</button>
+<button id="btn-stop">stop</button>
+<br />
+<br />
+<button id='btn-VolUp'>Volume +</button>
+<button id='btn-VolDown'>Volume -</button>
+<br />
+<span id="songTime"></span>
+<br />
+<input id="sliderTime" type="range" min='0' value='0' />
+<div id="musiclist"></div>
+
+</body>
+</html>
